@@ -1,10 +1,19 @@
 # -*- coding: utf-8 -*-
 
+# To parse ATP files, the fortranformat module is used
+# Install from pip: pip install fortranformat
+from fortranformat import FortranRecordReader
+from fortranformat import FortranRecordWriter
+# from fortranformat import RecordError
+
+import copy
+
+
 class DataCard:
-    ''' Class to implement a line of generalized ATP/Fortran style input records.
+    """ Class to implement a line of generalized ATP/Fortran style input records
         format is a format string suitable for the fortranformat module.
         fields is a list of field names for indexing the data dict. Field names
-            will usually be strings, but could be integers or floats in the case
+            will usually be strings, but could be integers or floats in the
             case of matching fixed_fields.
         fixed_fields is an iterable of field indices that have fixed values.
             The expected value for the field should be the field name in the
@@ -14,7 +23,7 @@ class DataCard:
         format and fields should not be changed after initialization.
 
         Reads only one line, but should be passed an interable of lines.
-    '''
+    """
 
     def __init__(self, format, fields, fixed_fields=(), name=None):
         self._fields = fields
@@ -29,7 +38,7 @@ class DataCard:
                 self.data[f] = None
 
     def read(self, lines):
-        ''' Read in datalines with validation prior to populating data. '''
+        """ Read in datalines with validation prior to populating data. """
         if not self.match(lines):
             # This should raise an exception and will help
             # identify where in the stack the exception occured.
@@ -42,7 +51,8 @@ class DataCard:
         data = self._reader.read(line)
         for f in self._fixed_fields:
             if data[f] != self._fields[f]:
-                raise ValueError('Fixed field with wrong value: ' + data[f] + '/' + self._fields[f])
+                raise ValueError('Fixed field with wrong value: ' + data[f] +
+                                 '/' + self._fields[f])
 
         for f, d in zip(self._fields, data):
             if f is not None:
@@ -55,8 +65,8 @@ class DataCard:
         return self._writer.write(data)
 
     def match(self, lines):
-        ''' Checks if text lines match record type. Does not modify card data.
-        '''
+        """ Checks if text lines match record type. Does not modify card data.
+        """
         tmp = copy.deepcopy(self)
         try:
             tmp._read(lines)
@@ -76,14 +86,14 @@ class DataCardFixedText(DataCard):
 
 
 class DataCardStack(DataCard):
-    ''' Class to implement generalized ATP/Fortran style input records.
-        datalines is a list of DataLine objects. It represents a single data card
-        that spans multiple lines. Fields must be unique among all lines.
+    """ Class to implement generalized ATP/Fortran style input records.
+        datalines is a list of DataLine objects. It represents a single data
+        card that spans multiple lines. Fields must be unique among all lines.
 
         data is represented internally using a dict.
 
         TODO: List of cards with termination card. Different class??
-    '''
+    """
 
     def __init__(self, datalines, name=None):
         self._datalines = copy.deepcopy(datalines)
@@ -96,9 +106,9 @@ class DataCardStack(DataCard):
                 self.data[f] = None
 
     def _read(self, lines):
-        ''' Read in datalines with no validation. Throw ValueError if records
+        """ Read in datalines with no validation. Throw ValueError if records
             don't match up.
-        '''
+        """
         line_idx = 0
         for dl in self._datalines:
             dl._read(lines[line_idx:])
@@ -125,18 +135,18 @@ class DataCardStack(DataCard):
 
 
 class DataCardRepeat(DataCardStack):
-    ''' Class to implement ATP/Fortram style input records where a record
+    """ Class to implement ATP/Fortram style input records where a record
         may be repeated some number of times. Records are read until an
         end-marker record is found.
 
-        For now, repeated_record and end_record have to be a single-line records.
-        That restriction should change in the future, but it will probably
-        require changing the interface to the other classes to an iterator or
-        similar.
+        For now, repeated_record and end_record have to be a single-line
+        records. That restriction should change in the future, but it will
+        probably require changing the interface to the other classes to an
+        iterator or similar.
 
         Data is stored as a list of cards. Access by index or iteration only at
         this time.
-    '''
+    """
 
     def __init__(self, repeated_record, end_record, name=None):
         self._repeated_record = copy.deepcopy(repeated_record)
