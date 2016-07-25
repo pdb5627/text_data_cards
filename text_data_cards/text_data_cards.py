@@ -82,7 +82,7 @@ class DataCard:
 class DataCardFixedText(DataCard):
     def __init__(self, text, name=None):
         DataCard.__init__(self, format='(A%d)' % len(text),
-                          fields=[text], fixed_fields=(0,), name=None)
+                          fields=[text], fixed_fields=(0,), name=name)
 
 
 class DataCardStack(DataCard):
