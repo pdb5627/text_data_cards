@@ -23,22 +23,31 @@ def tc():
                                      'DIAM', 'T', 'FIXED', 'RIGHT'],
                                     fixed_fields=(7, 8))
 
-
-def test_DataCard_nomatch(tc):
+@pytest.fixture()
+def tt_nomatch():
     #      I3 F5.4 F8.5    I2F8.5    F8.5    A8      A4
     #      1231234512345678121234567812345678123456781234512345
     tt = ['  3  0.0   .1357 0   .3959    1.18TESTTEXTFIXEDWRONG']
-    assert tc.match(tt) is False
-    with pytest.raises(ValueError):
-        tc.read(tt)
+    return tt
 
 
-def test_DataCard_match(tc):
+@pytest.fixture()
+def tt_match():
     #      I3 F5.4 F8.5    I2F8.5    F8.5    A8      A4
     #      1231234512345678121234567812345678123456781234512345
     tt = ['  3  0.0   .1357 0   .3959    1.18TESTTEXTFIXEDRIGHT']
-    assert tc.match(tt) is True
-    tc.read(tt)
+    return tt
+
+
+def test_DataCard_nomatch(tc, tt_nomatch):
+    assert tc.match(tt_nomatch) is False
+    with pytest.raises(ValueError):
+        tc.read(tt_nomatch)
+
+
+def test_DataCard_match(tc, tt_match):
+    assert tc.match(tt_match) is True
+    tc.read(tt_match)
     assert tc.data['IP'] == 3
     assert tc.data['SKIN'] == 0.0
     assert tc.data['RESIS'] == 0.1357
@@ -56,14 +65,21 @@ def tc_fixed_text():
     return text_data_cards.DataCardFixedText('SOME FIXED TEXT')
 
 
-def test_DataCardFixedText_match(tc_fixed_text):
-    tt = ['SOME FIXED TEXT']
-    assert tc_fixed_text.match(tt) is True
+@pytest.fixture()
+def tt_fixed_text_nomatch():
+    return ['SOME WRONG TEXT']
+
+@pytest.fixture()
+def tt_fixed_text_match():
+    return ['SOME FIXED TEXT']
 
 
-def test_DataCardFixedText_nomatch(tc_fixed_text):
-    tt = ['SOME WRONG TEXT']
-    assert tc_fixed_text.match(tt) is False
+def test_DataCardFixedText_match(tc_fixed_text, tt_fixed_text_match):
+    assert tc_fixed_text.match(tt_fixed_text_match) is True
+
+
+def test_DataCardFixedText_nomatch(tc_fixed_text, tt_fixed_text_nomatch):
+    assert tc_fixed_text.match(tt_fixed_text_nomatch) is False
 
 
 # DataCardStack
