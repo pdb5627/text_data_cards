@@ -20,7 +20,9 @@ test_requirements = [
 setup(
     name='text_data_cards',
     version='0.1.0',
-    description="Utility module for working with text data with a line-oriented format, especially fixed-width or Fortran-format records.",
+    description="Utility module for working with text data with a "
+                "line-oriented format, especially fixed-width or "
+                "Fortran-format records.",
     long_description=readme + '\n\n' + history,
     author="Paul David Brown",
     author_email='pdb.lists@gmail.com',
