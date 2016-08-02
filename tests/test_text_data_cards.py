@@ -172,5 +172,9 @@ def test_DataCardFixedText_nomatch3(tc_repeat, tt_repeat_nomatch2):
 # TODO
 # Coverage.py shows that tests are still needed for the following:
 # - DataCard.write()
+def test_DataCard_write(tc, tt_match):
+    tc.read(tt_match)
+    assert tc.write() == ''.join(tt_match)
+
 # - Named cards and named access in card stack
 # - DataCardStack.num_lines()
