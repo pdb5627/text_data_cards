@@ -18,6 +18,8 @@ class DataCard:
         fixed_fields is an iterable of field indices that have fixed values.
             The expected value for the field should be the field name in the
             fields  list.
+        post_read_hook is an optional parameter indicating a function to be
+            called after reading lines into the DataCard.
         Data in the line is internally represented using a dict.
 
         format and fields should not be changed after initialization.
@@ -25,12 +27,14 @@ class DataCard:
         Reads only one line, but should be passed an interable of lines.
     """
 
-    def __init__(self, format, fields, fixed_fields=(), name=None):
+    def __init__(self, format, fields, fixed_fields=(), name=None,
+                 post_read_hook=None):
         self._fields = fields
         self._fixed_fields = tuple(fixed_fields)
         self._reader = FortranRecordReader(format)
         self._writer = FortranRecordWriter(format)
         self.name = name
+        self.post_read_hook = post_read_hook
 
         self.data = {}
         for f in fields:
@@ -46,6 +50,7 @@ class DataCard:
             tmp._read(lines)
         self._read(lines)
 
+
     def _read(self, lines):
         line = lines[0]
         data = self._reader.read(line)
@@ -57,6 +62,9 @@ class DataCard:
         for f, d in zip(self._fields, data):
             if f is not None:
                 self.data[f] = d
+
+        if self.post_read_hook is not None:
+            self.post_read_hook(self)
 
         return self
 
@@ -95,10 +103,11 @@ class DataCardStack(DataCard):
         TODO: List of cards with termination card. Different class??
     """
 
-    def __init__(self, datalines, name=None):
+    def __init__(self, datalines, name=None, post_read_hook=None):
         self._datalines = copy.deepcopy(datalines)
         self.name = name
         self._fixed_fields = ()
+        self.post_read_hook = post_read_hook
 
         self.data = {}
         for dl in self._datalines:
@@ -148,13 +157,15 @@ class DataCardRepeat(DataCardStack):
         this time.
     """
 
-    def __init__(self, repeated_record, end_record, name=None):
+    def __init__(self, repeated_record, end_record, name=None,
+                 post_read_hook=None):
         self._repeated_record = copy.deepcopy(repeated_record)
         self.end_record = copy.deepcopy(end_record)
         self._datalines = []
         self.data = []
         self.name = name
         self._fields = []
+        self.post_read_hook = post_read_hook
 
     def _read(self, lines):
 
