@@ -128,6 +128,9 @@ class DataCardStack(DataCard):
             if dl.name is not None:
                 self.data[dl.name] = dl.data
 
+        if self.post_read_hook is not None:
+            self.post_read_hook(self)
+
         return self
 
     def write(self):
@@ -184,5 +187,8 @@ class DataCardRepeat(DataCardStack):
             r._read(lines[line_idx:])
             line_idx += r.num_lines()
             self.data.append(r.data)
+
+        if self.post_read_hook is not None:
+            self.post_read_hook(self)
 
         return self
