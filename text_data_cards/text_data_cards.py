@@ -93,6 +93,25 @@ class DataCardFixedText(DataCard):
         DataCard.__init__(self, format='(A%d)' % len(text),
                           fields=[text], fixed_fields=(0,), name=name)
 
+    def _read(self, lines):
+        lines[0]
+        if lines[0] != self._fields[0]:
+            raise ValueError('Fixed text with wrong value: ' + lines[0] +
+                                 '/' + self._fields[0])
+
+        if self.post_read_hook is not None:
+            self.post_read_hook(self)
+
+        return self
+
+    def write(self):
+        return self._fields[0]
+
+    def match(self, lines):
+        """ Checks if text lines match record type. Does not modify card data.
+        """
+        return lines[0] == self._fields[0]
+
 
 class DataCardStack(DataCard):
     """ Class to implement generalized ATP/Fortran style input records.
