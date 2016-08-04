@@ -195,6 +195,25 @@ def test_DataCardAlt_nomatch1(tc_alt, tt_nomatch):
 def test_DataCardAlt_nomatch2(tc_alt, tt_fixed_text_nomatch):
     assert tc_alt.match(tt_fixed_text_nomatch) is False
 
+
+# DataCardOption
+@pytest.fixture()
+def tc_opt():
+    return text_data_cards.DataCardOptional(tc())
+
+
+def test_DataCardOptional_match1(tc_opt, tt_match):
+    test_DataCard_match(tc_opt, tt_match)
+    tc_opt.read(tt_match)
+    assert tc_opt.num_lines() == 1
+
+
+def test_DataCardAlt_match2(tc_opt, tt_fixed_text_match):
+    assert tc_opt.match(tt_fixed_text_match) is True
+    tc_opt.read(tt_fixed_text_match)
+    assert tc_opt.num_lines() == 0
+
+
 # TODO
 # Coverage.py shows that tests are still needed for the following:
 # - DataCard.write()

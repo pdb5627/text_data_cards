@@ -201,38 +201,66 @@ class DataCardAlternates(DataCardStack):
         tried first, then the other possible record types in their listed order.
     """
 
-    def __init__(self, alt_list, selected_alt=None, name=None,
+    def __init__(self, alt_list, dl_matched=None, name=None,
                  post_read_hook=None):
         self.alt_list = alt_list
-        self.selected_alt = selected_alt
+        self.dl_matched = dl_matched
         self._sync_to_selected()
         self.name = name
 
         self.post_read_hook = post_read_hook
 
     def _sync_to_selected(self):
-        if self.selected_alt is None:
+        if self.dl_matched is None:
             self._datalines = []
             self.data = {}
             self._fields = []
         else:
-            self._datalines = [self.selected_alt]
-            self.data = self.selected_alt.data
-            self._fields = self.selected_alt._fields
+            self._datalines = [self.dl_matched]
+            self.data = self.dl_matched.data
+            self._fields = self.dl_matched._fields
 
     def _read(self, lines):
 
         dl_to_check = itertools.chain(self._datalines,
-                               filter(lambda dl: dl is not self.selected_alt,
+                               filter(lambda dl: dl is not self.dl_matched,
                                       self.alt_list))
         for dl in dl_to_check:
             if dl.match(lines):
                 dl.read(lines)
-                self.selected_alt = dl
+                self.dl_matched = dl
                 self._sync_to_selected()
                 break
         else:
             raise ValueError('None of the alternate datacards matched.')
+
+        if self.post_read_hook is not None:
+            self.post_read_hook(self)
+
+        return self
+
+
+class DataCardOptional(DataCardAlternates):
+    """ Class to implement ATP/Fortran style input records where the card is
+        optional and can be matched or not matched.
+    """
+
+    def __init__(self, dl, dl_matched=None, name=None, post_read_hook=None):
+        self.dl = dl
+        self.dl_matched = dl_matched
+        self._sync_to_selected()
+        self.name = name
+
+        self.post_read_hook = post_read_hook
+
+    def _read(self, lines):
+
+        if self.dl.match(lines):
+            self.dl.read(lines)
+            self.dl_matched = self.dl
+        else:
+            self.dl_matched = None
+        self._sync_to_selected()
 
         if self.post_read_hook is not None:
             self.post_read_hook(self)
