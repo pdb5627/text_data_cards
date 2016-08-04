@@ -7,6 +7,7 @@ from fortranformat import FortranRecordWriter
 # from fortranformat import RecordError
 
 import copy
+import itertools
 
 
 class DataCard:
@@ -112,7 +113,7 @@ class DataCardStack(DataCard):
         self.data = {}
         for dl in self._datalines:
             for f in dl._fields:
-                self.data[f] = None
+                self.data[f] = dl.data[f]
 
     def _read(self, lines):
         """ Read in datalines with no validation. Throw ValueError if records
@@ -187,6 +188,51 @@ class DataCardRepeat(DataCardStack):
             r._read(lines[line_idx:])
             line_idx += r.num_lines()
             self.data.append(r.data)
+
+        if self.post_read_hook is not None:
+            self.post_read_hook(self)
+
+        return self
+
+
+class DataCardAlternates(DataCardStack):
+    """ Class to implement ATP/Fortran style input records where different
+        types of records may match. When reading, the selected record type is
+        tried first, then the other possible record types in their listed order.
+    """
+
+    def __init__(self, alt_list, selected_alt=None, name=None,
+                 post_read_hook=None):
+        self.alt_list = alt_list
+        self.selected_alt = selected_alt
+        self._sync_to_selected()
+        self.name = name
+
+        self.post_read_hook = post_read_hook
+
+    def _sync_to_selected(self):
+        if self.selected_alt is None:
+            self._datalines = []
+            self.data = {}
+            self._fields = []
+        else:
+            self._datalines = [self.selected_alt]
+            self.data = self.selected_alt.data
+            self._fields = self.selected_alt._fields
+
+    def _read(self, lines):
+
+        dl_to_check = itertools.chain(self._datalines,
+                               filter(lambda dl: dl is not self.selected_alt,
+                                      self.alt_list))
+        for dl in dl_to_check:
+            if dl.match(lines):
+                dl.read(lines)
+                self.selected_alt = dl
+                self._sync_to_selected()
+                break
+        else:
+            raise ValueError('None of the alternate datacards matched.')
 
         if self.post_read_hook is not None:
             self.post_read_hook(self)

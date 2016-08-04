@@ -173,6 +173,28 @@ def test_DataCardRepeat_nomatch2(tc_repeat, tt_repeat_nomatch2):
 def test_DataCardFixedText_nomatch3(tc_repeat, tt_repeat_nomatch2):
     test_DataCard_nomatch(tc_repeat, tt_repeat_nomatch2)
 
+
+# DataCardAlternate
+@pytest.fixture()
+def tc_alt():
+    return text_data_cards.DataCardAlternates([tc(), tc_fixed_text()])
+
+
+def test_DataCardAlt_match1(tc_alt, tt_match):
+    test_DataCard_match(tc_alt, tt_match)
+
+
+def test_DataCardAlt_match2(tc_alt, tt_fixed_text_match):
+    assert tc_alt.match(tt_fixed_text_match) is True
+
+
+def test_DataCardAlt_nomatch1(tc_alt, tt_nomatch):
+    test_DataCard_nomatch(tc_alt, tt_nomatch)
+
+
+def test_DataCardAlt_nomatch2(tc_alt, tt_fixed_text_nomatch):
+    assert tc_alt.match(tt_fixed_text_nomatch) is False
+
 # TODO
 # Coverage.py shows that tests are still needed for the following:
 # - DataCard.write()
