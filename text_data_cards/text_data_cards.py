@@ -42,9 +42,17 @@ class DataCard:
             if f is not None:
                 self.data[f] = None
 
-    def read(self, lines):
-        """ Read in datalines with validation prior to populating data. """
-        if not self.match(lines):
+    def read(self, lines, read_all_or_none=True):
+        """ Read in datalines with validation prior to populating data.
+            lines: list of lines to read. Extra lines are ignored.
+            read_all_or_none: Tests the input before reading if True.
+            If False, a partial read will occur before an exception is
+            raised. Set to True is safest but has additional overhead of
+            copying the object and peeking at the data before reading. For
+            large cards, the performance difference is significant
+            (1 s vs 60 s).
+        """
+        if read_all_or_none and not self.match(lines):
             # This should raise an exception and will help
             # identify where in the stack the exception occured.
             tmp = copy.deepcopy(self)
