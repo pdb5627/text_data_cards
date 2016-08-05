@@ -126,6 +126,9 @@ def test_DataCardStack_nomatch2(tc_stack, tt_stack_nomatch2):
 def tc_repeat():
     return text_data_cards.DataCardRepeat(tc(), tc_fixed_text())
 
+@pytest.fixture()
+def tc_repeat_no_end():
+    return text_data_cards.DataCardRepeat(tc())
 
 @pytest.fixture()
 def tt_repeat_match():
@@ -161,6 +164,19 @@ def test_DataCardRepeat_match(tc_repeat, tt_repeat_match):
         assert d['FIXED'] == 'FIXED'
         assert d['RIGHT'] == 'RIGHT'
 
+def test_DataCardRepeat_match_no_end(tc_repeat_no_end, tt_repeat_match):
+    assert tc_repeat_no_end.match(tt_repeat_match) is True
+    tc_repeat_no_end.read(tt_repeat_match)
+    for d in tc_repeat_no_end.data:
+        assert d['IP'] == 4
+        assert d['SKIN'] == 0.0
+        assert d['RESIS'] == 0.1357
+        assert d['IX'] == 0
+        assert d['REACT'] == 0.3959
+        assert d['DIAM'] == 1.18
+        assert d['T'] == 'TESTTEXT'
+        assert d['FIXED'] == 'FIXED'
+        assert d['RIGHT'] == 'RIGHT'
 
 def test_DataCardRepeat_nomatch1(tc_repeat, tt_repeat_nomatch1):
     test_DataCard_nomatch(tc_repeat, tt_repeat_nomatch1)

@@ -188,7 +188,7 @@ class DataCardRepeat(DataCardStack):
         this time.
     """
 
-    def __init__(self, repeated_record, end_record, name=None,
+    def __init__(self, repeated_record, end_record=None, name=None,
                  post_read_hook=None):
         self._repeated_record = copy.deepcopy(repeated_record)
         self.end_record = copy.deepcopy(end_record)
@@ -204,7 +204,8 @@ class DataCardRepeat(DataCardStack):
         # Loop breaks internally due to complexity of break conditions
         line_idx = 0
         while line_idx < len(lines):
-            if self.end_record.match(lines[line_idx:]):
+            if self.end_record is not None \
+                    and self.end_record.match(lines[line_idx:]):
                 self._datalines.append(self.end_record)
                 self.end_record._read(lines[line_idx:])
                 line_idx += self.end_record.num_lines()
@@ -212,9 +213,18 @@ class DataCardRepeat(DataCardStack):
             # Read record and append to records list
             r = copy.deepcopy(self._repeated_record)
             self._datalines.append(r)
-            r._read(lines[line_idx:])
-            line_idx += r.num_lines()
-            self.data.append(r.data)
+            if self.end_record is None:
+                try:
+                    r._read(lines[line_idx:])
+                    line_idx += r.num_lines()
+                    self.data.append(r.data)
+                except ValueError:
+                    self._datalines.pop()
+                    break
+            else:
+                r._read(lines[line_idx:])
+                line_idx += r.num_lines()
+                self.data.append(r.data)
 
         if self.post_read_hook is not None:
             self.post_read_hook(self)
