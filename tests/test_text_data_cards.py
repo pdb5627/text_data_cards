@@ -167,6 +167,7 @@ def test_DataCardRepeat_match(tc_repeat, tt_repeat_match):
 def test_DataCardRepeat_match_no_end(tc_repeat_no_end, tt_repeat_match):
     assert tc_repeat_no_end.match(tt_repeat_match) is True
     tc_repeat_no_end.read(tt_repeat_match)
+    assert tc_repeat_no_end.num_lines() == 2
     for d in tc_repeat_no_end.data:
         assert d['IP'] == 4
         assert d['SKIN'] == 0.0
@@ -177,6 +178,8 @@ def test_DataCardRepeat_match_no_end(tc_repeat_no_end, tt_repeat_match):
         assert d['T'] == 'TESTTEXT'
         assert d['FIXED'] == 'FIXED'
         assert d['RIGHT'] == 'RIGHT'
+    tc_repeat_no_end.read(tt_repeat_match)
+    assert tc_repeat_no_end.num_lines() == 2
 
 def test_DataCardRepeat_nomatch1(tc_repeat, tt_repeat_nomatch1):
     test_DataCard_nomatch(tc_repeat, tt_repeat_nomatch1)

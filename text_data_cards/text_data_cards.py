@@ -201,6 +201,7 @@ class DataCardRepeat(DataCardStack):
     def _read(self, lines):
 
         self.data = []
+        self._datalines = []
         # Loop breaks internally due to complexity of break conditions
         line_idx = 0
         while line_idx < len(lines):
