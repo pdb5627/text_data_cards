@@ -22,7 +22,6 @@ Utility module for working with text data with a line-oriented format, especiall
 
 
 * Free software: MIT license
-* Documentation: https://text-data-cards.readthedocs.io.
 
 
 Features
